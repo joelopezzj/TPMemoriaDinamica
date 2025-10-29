@@ -21,6 +21,9 @@ void mostrarArchivo(char nombre[]);
 void guardarArchivoEnArreglo(char *nombreArchivo, stAlumno *arr, int cant);
 int contarAnio(stAlumno *arr, int cant, int anio);
 stAlumno* arregloAnio(stAlumno *arr, int cant, int anio, int *cantanio);
+void separarAnio(stAlumno *arr, int cant);
+void mostrarInversoRecursivo(stAlumno *arr, int i);
+void mostrarArchivoInverso(char nombre[], int pos);
 
 ///Main///
 int main()
@@ -43,6 +46,9 @@ int main()
         printf("4. Redimensionar arreglo\n");
         printf("5. Guardar en archivo nuevo y mostrar archivo\n");
         printf("6. Filtrar por Anio y mostrar nuevo arreglo\n");
+        printf("7. Separar alumnos por anio y cargarlos en archivos\n");
+        printf("8. Mostrar alumnos del arreglo dinamico de manera inversa recursivamente\n");
+        printf("9. Mostrar archivo de manera inversa\n");
         printf("0. Salir\n");
         scanf("%d", &op);
         switch(op)
@@ -85,6 +91,24 @@ int main()
             anio = arregloAnio(mayores, cantMay, a, &cantAnio);
             system("pause");
             mostrarAlumnosArreglo(anio, cantAnio);
+            system("pause");
+            system("cls");
+            break;
+        case 7:
+            separarAnio(alumnos, cantidad);
+            mostrarArchivo("primer_anio.dat");
+            mostrarArchivo("segudno_anio.dat");
+            mostrarArchivo("tercer_anio.dat");
+            system("pause");
+            system("cls");
+            break;
+        case 8:
+            mostrarInversoRecursivo(mayores, cantMay-1);
+            system("pause");
+            system("cls");
+            break;
+        case 9:
+            mostrarArchivoInverso(archivo, cantidad);
             system("pause");
             system("cls");
             break;
@@ -285,8 +309,106 @@ stAlumno* arregloAnio(stAlumno *arr, int cant, int anio, int *cantanio)
     return filtrados;
 }
 
-/*Ejercicio 7*/
+/*Ejercicio 7 Separar los alumnos en función del año cursado, y guardar cada grupo en
+archivos binarios distintos: primer_anio.dat, segundo_anio.dat y tercer_anio.dat. */
 void separarAnio(stAlumno *arr, int cant)
 {
+    int cont1 = 0, cont2 = 0, cont3 = 0;
+    for(int i = 0; i < cant; i++)
+    {
+        if(arr[i].anio == 1)
+        {
+            cont1++;
+        }
+        else if(arr[i].anio == 2)
+        {
+            cont2++;
+        }
+        else if(arr[i].anio == 3)
+        {
+            cont3++;
+        }
+    }
+    stAlumno *primero = (stAlumno*) malloc (cont1 * sizeof(stAlumno));
+    stAlumno *segundo = (stAlumno*) malloc (cont2 * sizeof(stAlumno));
+    stAlumno *tercero = (stAlumno*) malloc (cont3 * sizeof(stAlumno));
 
+    int p=0, s=0, t=0;
+    for(int i = 0; i<cant; i++)
+    {
+        if(arr[i].anio == 1)
+        {
+            primero[p] = arr[i];
+            p++;
+        }
+        else if(arr[i].anio == 2)
+        {
+            segundo[s] = arr[i];
+            s++;
+        }
+        else if(arr[i].anio == 3)
+        {
+            tercero[t] = arr[i];
+            t++;
+        }
+    }
+    FILE *arch = fopen("primer_anio.dat", "wb");
+    fwrite(primero, sizeof(stAlumno), cont1, arch);
+    fclose(arch);
+
+    arch = fopen("segudno_anio.dat", "wb");
+    fwrite(segundo, sizeof(stAlumno), cont2, arch);
+    fclose(arch);
+
+    arch = fopen("tercer_anio.dat", "wb");
+    fwrite(tercero, sizeof(stAlumno), cont3, arch);
+    fclose(arch);
+
+    free(primero);
+    free(segundo);
+    free(tercero);
+}
+
+/* 8 Mostrar alumnos de un arreglo de manera inversa utilizando recursividad */
+void mostrarInversoRecursivo(stAlumno *arr, int i)
+{
+    if (i < 0)
+    {
+        return;
+    }
+
+    printf("Legajo: %d | Nombre: %s | Edad: %d | Año: %d\n",
+           arr[i].legajo,
+           arr[i].nombreYapellido,
+           arr[i].edad,
+           arr[i].anio);
+    mostrarInversoRecursivo(arr, i-1);
+}
+
+/* 9 Leer archivo de manera inversa recursivamente y utilizando fseek */
+void mostrarArchivoInverso(char nombre[], int pos)
+{
+    stAlumno p;
+
+    if(pos<0)
+    {
+        return;
+    }
+    FILE *arch = fopen(nombre, "rb");
+
+    if(arch != NULL)
+    {
+        fseek(arch, pos * sizeof(stAlumno), SEEK_SET);
+
+        if(fread(&p, sizeof(stAlumno), 1, arch) > 0)
+        {
+            printf("Legajo: %d | Nombre: %s | Edad: %d | Año: %d\n",
+                   p.legajo,
+                   p.nombreYapellido,
+                   p.edad,
+                   p.anio);
+        }
+        fclose(arch);
+    }
+    mostrarArchivoInverso(nombre, pos-1);
 }
